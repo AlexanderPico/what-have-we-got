@@ -252,7 +252,7 @@ def _lookup_ebay(item: Item, client: httpx.Client) -> Optional[PriceEstimate]:
         return PriceEstimate(
             low=prices[0],
             high=prices[-1],
-            median=prices[len(prices) // 2],
+            median=prices[len(prices) // 2] if len(prices) % 2 else (prices[len(prices) // 2 - 1] + prices[len(prices) // 2]) / 2,
             source="ebay_completed",
             last_updated=datetime.now(),
         )
