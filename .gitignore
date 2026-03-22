@@ -9,4 +9,3 @@ build/
 *.db
 .DS_Store
 .ruff_cache/
-test
