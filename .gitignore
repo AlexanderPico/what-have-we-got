@@ -14,3 +14,6 @@ build/
 local-files/
 local-real-images/
 AGENTS_README.local.md
+
+# Local agent orientation files
+AGENT_README.local.md
