@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}whgot · sessions{% endblock %}
+
+{% block content %}
+<section class="card summary-card">
+  <h2>Saved sessions</h2>
+  <div class="button-row">
+    <a class="button secondary" href="/">New analysis</a>
+  </div>
+</section>
+
+<section class="card results-card">
+  {% if sessions %}
+  <div class="results-table-wrap">
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>Session</th>
+          <th>Saved</th>
+          <th>Mode</th>
+          <th>Model</th>
+          <th>Items</th>
+          <th>Priced</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for session in sessions %}
+        <tr>
+          <td><a href="/sessions/{{ session.session_id }}">{{ session.session_id }}</a></td>
+          <td>{{ session.saved_at or '—' }}</td>
+          <td>{{ session.mode }}</td>
+          <td>{{ session.model }}</td>
+          <td>{{ session.item_count }}</td>
+          <td>{{ session.priced_count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="subtext">No saved sessions found under ~/.whgot/sessions/.</p>
+  {% endif %}
+</section>
+{% endblock %}

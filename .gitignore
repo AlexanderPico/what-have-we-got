@@ -5,8 +5,12 @@ __pycache__/
 dist/
 build/
 .venv/
+.venv*/
 .env
 *.db
 .DS_Store
 .ruff_cache/
+.pytest_cache/
 local-files/
+local-real-images/
+AGENTS_README.local.md

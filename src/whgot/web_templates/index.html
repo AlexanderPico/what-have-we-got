@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}whgot · analyze{% endblock %}
+
+{% block content %}
+<section class="card form-card">
+  <h2>Analyze items</h2>
+  <p>Upload photos or paste text descriptions to identify likely items, fetch rough price bands, and generate listing drafts.</p>
+
+  <form action="/analyze" method="post" enctype="multipart/form-data" class="stack">
+    <div class="field-row">
+      <label>
+        Mode
+        <select name="mode">
+          <option value="single">Single item per image</option>
+          <option value="batch">Multi-item image / shelf mode</option>
+        </select>
+      </label>
+
+      <label>
+        Model
+        <input type="text" name="model" value="{{ model }}" />
+      </label>
+    </div>
+
+    <label>
+      Upload image files
+      <input type="file" name="files" multiple />
+    </label>
+
+    <label>
+      Or paste text descriptions (one per line)
+      <textarea name="text_input" rows="8" placeholder="Sony Walkman WM-FX195&#10;Star Wars Black Series Darth Vader figure&#10;The Manga Guide to Relativity paperback"></textarea>
+    </label>
+
+    <div class="check-row">
+      <label><input type="checkbox" name="price_lookup" checked /> Run price lookup</label>
+      <label><input type="checkbox" name="use_llm" checked /> Use LLM for listing titles</label>
+    </div>
+
+    <div class="button-row">
+      <button type="submit">Analyze</button>
+      <button type="submit" formaction="/demo-load" formmethod="post" class="secondary">Load demo session</button>
+      <a class="button secondary" href="/sessions">Browse saved sessions</a>
+    </div>
+  </form>
+</section>
+
+<section class="card summary-card">
+  <h2>Recent sessions</h2>
+  {% if recent_sessions %}
+  <div class="results-table-wrap">
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>Session</th>
+          <th>Saved</th>
+          <th>Mode</th>
+          <th>Items</th>
+          <th>Priced</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for session in recent_sessions %}
+        <tr>
+          <td><a href="/sessions/{{ session.session_id }}">{{ session.session_id }}</a></td>
+          <td>{{ session.saved_at or '—' }}</td>
+          <td>{{ session.mode }}</td>
+          <td>{{ session.item_count }}</td>
+          <td>{{ session.priced_count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="subtext">No saved sessions yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

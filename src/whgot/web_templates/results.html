@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}whgot · results{% endblock %}
+
+{% block content %}
+<section class="card summary-card">
+  <div class="summary-grid">
+    <div>
+      <div class="eyebrow">Session</div>
+      <div class="metric">{{ session_id }}</div>
+    </div>
+    <div>
+      <div class="eyebrow">Items</div>
+      <div class="metric">{{ total_items }}</div>
+    </div>
+    <div>
+      <div class="eyebrow">Visible</div>
+      <div class="metric">{{ visible_items }}</div>
+    </div>
+    <div>
+      <div class="eyebrow">Priced</div>
+      <div class="metric">{{ priced_count }}</div>
+    </div>
+    <div>
+      <div class="eyebrow">Mode</div>
+      <div class="metric">{{ metadata.mode }}</div>
+    </div>
+  </div>
+  <div class="button-row top-gap">
+    <a class="button" href="/sessions/{{ session_id }}/export.csv">Export CSV</a>
+    <a class="button secondary" href="/sessions/{{ session_id }}/export.json">Export JSON</a>
+    <a class="button secondary" href="/sessions">All sessions</a>
+    <a class="button secondary" href="/">New analysis</a>
+  </div>
+</section>
+
+<section class="card form-card">
+  <h2>Review controls</h2>
+  <form method="get" action="/sessions/{{ session_id }}" class="stack">
+    <div class="field-row">
+      <label>
+        Sort by
+        <select name="sort_by">
+          <option value="triage" {% if sort_by == 'triage' %}selected{% endif %}>Triage score</option>
+          <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Price</option>
+          <option value="confidence" {% if sort_by == 'confidence' %}selected{% endif %}>Confidence</option>
+          <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name</option>
+        </select>
+      </label>
+
+      <label>
+        Category filter
+        <select name="category_filter">
+          <option value="all" {% if category_filter == 'all' %}selected{% endif %}>All categories</option>
+          {% for category in available_categories %}
+          <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>{{ category }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+
+    <div class="check-row">
+      <label><input type="checkbox" name="priced_only" value="true" {% if priced_only %}checked{% endif %} /> Show priced items only</label>
+    </div>
+
+    <div class="button-row">
+      <button type="submit">Apply filters</button>
+    </div>
+  </form>
+</section>
+
+<section class="card results-card">
+  <h2>Items</h2>
+  <div class="results-table-wrap">
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Triage</th>
+          <th>Confidence</th>
+          <th>Median</th>
+          <th>Price source</th>
+          <th>Why</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>
+            <strong>{{ item.name }}</strong>
+            {% if item.description %}
+            <div class="subtext">{{ item.description }}</div>
+            {% endif %}
+          </td>
+          <td>{{ item.category }}</td>
+          <td>
+            <span class="badge badge-{{ item.triage.badge }}">{{ item.triage.badge }}</span>
+            <div class="subtext">score {{ '%.1f'|format(item.triage.score) }}</div>
+          </td>
+          <td>{{ '%.0f'|format(item.confidence * 100) }}%</td>
+          <td>
+            {% if item.pricing.median %}
+              ${{ '%.2f'|format(item.pricing.median) }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>
+            {{ item.pricing.source or '—' }}
+            {% if item.pricing.comp_count %}
+            <div class="subtext">{{ item.pricing.comp_count }} comps</div>
+            {% endif %}
+          </td>
+          <td>
+            <details>
+              <summary>triage + provenance</summary>
+              <div class="detail-stack">
+                <div><strong>Triage:</strong> {{ item.triage_reason_text }}</div>
+                <div><strong>Source details:</strong> {{ item.provenance_text }}</div>
+                <div><strong>Warning:</strong> {{ item.pricing.warning or 'none' }}</div>
+              </div>
+            </details>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card detail-card">
+  <h2>Visible item details</h2>
+  <div class="listing-grid">
+    {% for item in items %}
+    <article class="listing-card">
+      <h3>{{ item.name }}</h3>
+      <div class="subtext">{{ item.category }} · {{ '%.0f'|format(item.confidence * 100) }}% confidence</div>
+      <div class="price-line">
+        {% if item.pricing.median %}
+          Median: ${{ '%.2f'|format(item.pricing.median) }}
+        {% else %}
+          No median price yet
+        {% endif %}
+      </div>
+      <div class="detail-stack">
+        <div><strong>Triage badge:</strong> {{ item.triage.badge }}</div>
+        <div><strong>Triage score:</strong> {{ '%.1f'|format(item.triage.score) }}</div>
+        <div><strong>Triage reasons:</strong> {{ item.triage_reason_text }}</div>
+        <div><strong>Pricing source:</strong> {{ item.pricing.source or 'none' }}</div>
+        <div><strong>Provenance:</strong> {{ item.provenance_text }}</div>
+        <div><strong>Warning:</strong> {{ item.pricing.warning or 'none' }}</div>
+      </div>
+      {% if item.metadata %}
+      <details>
+        <summary>Metadata</summary>
+        <pre>{{ item.metadata }}</pre>
+      </details>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card listings-card">
+  <h2>Listing drafts</h2>
+  <div class="listing-grid">
+    {% for listing in listings %}
+    <article class="listing-card">
+      <h3>{{ listing.title }}</h3>
+      <div class="subtext">{{ listing.category_name }} · {{ listing.condition_name }}</div>
+      <div class="price-line">
+        {% if listing.suggested_price %}
+          Suggested: ${{ '%.2f'|format(listing.suggested_price) }}
+        {% endif %}
+        {% if listing.buy_it_now %}
+          · BIN: ${{ '%.2f'|format(listing.buy_it_now) }}
+        {% endif %}
+      </div>
+      <details>
+        <summary>Description</summary>
+        <pre>{{ listing.description }}</pre>
+      </details>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

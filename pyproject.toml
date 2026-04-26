@@ -13,12 +13,16 @@ authors = [
     { name = "Alexander Pico", email = "arpico@gmail.com" },
 ]
 dependencies = [
-    "typer>=0.12",
-    "rich>=13.0",
+    "fastapi>=0.115",
+    "httpx>=0.27",
+    "jinja2>=3.1",
     "ollama>=0.4",
     "pillow>=10.0",
     "pydantic>=2.0",
-    "httpx>=0.27",
+    "python-multipart>=0.0.9",
+    "rich>=13.0",
+    "typer>=0.12",
+    "uvicorn>=0.30",
 ]
 
 [project.optional-dependencies]
@@ -29,6 +33,14 @@ dev = [
 
 [project.scripts]
 whgot = "whgot.cli:app"
+whgot-web = "whgot.web_app:run"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/whgot"]
+include = [
+    "/src/whgot/web_templates/**/*",
+    "/src/whgot/web_static/**/*",
+]
 
 [tool.ruff]
 line-length = 100

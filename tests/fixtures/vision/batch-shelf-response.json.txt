@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Blade Runner: The Director's Cut",
+    "category": "dvd",
+    "confidence": 0.85,
+    "description": "DVD case visible on shelf",
+    "metadata": {
+      "director": "Ridley Scott",
+      "genre": "Sci-Fi"
+    },
+    "identifiers": {
+      "upc": "085391631729"
+    }
+  },
+  {
+    "name": "Star Wars Black Series Darth Vader",
+    "category": "toy",
+    "confidence": 0.73,
+    "description": "Action figure in packaging",
+    "metadata": {
+      "franchise": "Star Wars",
+      "character": "Darth Vader",
+      "in_packaging": true
+    },
+    "identifiers": {}
+  }
+]

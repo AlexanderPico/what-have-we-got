@@ -179,10 +179,11 @@ def test_generate_listing_full():
 
 
 def test_listing_to_dict():
-    """Listing serialization should not include source_item."""
+    """Listing serialization should not include source_item object, but keep source item name."""
     item = Item(name="Test")
     listing = generate_listing(item, use_llm=False)
-    d = listing.to_dict()
-    assert "source_item" not in d
-    assert "title" in d
-    assert "category_id" in d
+    data = listing.to_dict()
+    assert "source_item" not in data
+    assert data["source_item_name"] == "Test"
+    assert "title" in data
+    assert "category_id" in data

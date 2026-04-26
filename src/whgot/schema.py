@@ -1,7 +1,7 @@
 """Canonical item schema for identified items.
 
 This is the core data model that all pipeline stages produce and consume.
-Designed to cover books, media, clothing, electronics, toys/collectibles.
+Designed to cover books, media, clothing, electronics, toys, and collectibles.
 """
 
 from __future__ import annotations
@@ -43,6 +43,14 @@ class Condition(str, Enum):
     UNKNOWN = "unknown"
 
 
+class TriageBadge(str, Enum):
+    """Fast seller-facing prioritization badge."""
+
+    WORTH_CHECKING = "worth_checking"
+    MAYBE = "maybe"
+    SKIP = "skip"
+
+
 class Identifiers(BaseModel):
     """Known identifiers for the item. All optional — we populate what we can."""
 
@@ -55,13 +63,26 @@ class Identifiers(BaseModel):
 
 
 class PriceEstimate(BaseModel):
-    """Price estimate with source attribution."""
+    """Price estimate with source attribution and light provenance."""
 
     low: Optional[float] = None
     high: Optional[float] = None
     median: Optional[float] = None
-    source: Optional[str] = None  # e.g., "ebay_completed", "amazon", "manual"
+    source: Optional[str] = None
     last_updated: Optional[datetime] = None
+    comp_count: Optional[int] = None
+    query: Optional[str] = None
+    source_details: list[str] = Field(default_factory=list)
+    confidence: Optional[float] = None
+    warning: Optional[str] = None
+
+
+class TriageAssessment(BaseModel):
+    """Heuristic prioritization for seller review workflows."""
+
+    score: float = Field(default=0.0, ge=0.0, le=100.0)
+    badge: TriageBadge = Field(default=TriageBadge.MAYBE)
+    reasons: list[str] = Field(default_factory=list)
 
 
 class ItemMetadata(BaseModel):
@@ -73,9 +94,9 @@ class ItemMetadata(BaseModel):
     color: Optional[str] = None
     size: Optional[str] = None
     material: Optional[str] = None
-    era: Optional[str] = None  # e.g., "1990s", "mid-century"
+    era: Optional[str] = None
     genre: Optional[str] = None
-    format: Optional[str] = None  # e.g., "hardcover", "widescreen", "digipak"
+    format: Optional[str] = None
 
     # Book-specific
     author: Optional[str] = None
@@ -96,12 +117,7 @@ class ItemMetadata(BaseModel):
 
 
 class Item(BaseModel):
-    """A single identified item — the canonical unit of the whgot pipeline.
-
-    Every stage of the pipeline reads and writes Items. The identify stage
-    creates them with name/category/metadata; the price stage enriches them
-    with pricing; the listing stage consumes them to generate eBay listings.
-    """
+    """A single identified item — the canonical unit of the whgot pipeline."""
 
     name: str = Field(..., description="Human-readable item name/title")
     category: ItemCategory = Field(default=ItemCategory.OTHER)
@@ -113,16 +129,20 @@ class Item(BaseModel):
         description="Model confidence in identification (0-1)",
     )
     description: Optional[str] = Field(
-        default=None, description="Free-text description of the item"
+        default=None,
+        description="Free-text description of the item",
     )
     identifiers: Identifiers = Field(default_factory=Identifiers)
     pricing: PriceEstimate = Field(default_factory=PriceEstimate)
+    triage: TriageAssessment = Field(default_factory=TriageAssessment)
     metadata: ItemMetadata = Field(default_factory=ItemMetadata)
     source_image: Optional[str] = Field(
-        default=None, description="Path to the source image, if identified from a photo"
+        default=None,
+        description="Path to the source image, if identified from a photo",
     )
     source_text: Optional[str] = Field(
-        default=None, description="Original text input, if identified from a text list"
+        default=None,
+        description="Original text input, if identified from a text list",
     )
 
     def summary(self) -> str:
@@ -136,4 +156,6 @@ class Item(BaseModel):
             parts.append(f"[{self.condition.value}]")
         if self.pricing.median:
             parts.append(f"~${self.pricing.median:.2f}")
+        if self.triage.badge != TriageBadge.MAYBE or self.triage.score:
+            parts.append(f"triage:{self.triage.badge.value}")
         return " — ".join(parts)

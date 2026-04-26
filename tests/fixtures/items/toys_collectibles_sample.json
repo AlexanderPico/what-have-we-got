@@ -1,0 +1,21 @@
+[
+  {
+    "name": "Star Wars Black Series Darth Vader",
+    "category": "toy",
+    "confidence": 0.76,
+    "description": "Figure in original packaging",
+    "metadata": {
+      "franchise": "Star Wars",
+      "character": "Darth Vader",
+      "in_packaging": true
+    },
+    "pricing": {
+      "low": 15.0,
+      "high": 65.0,
+      "median": 32.0,
+      "source": "ebay_completed",
+      "comp_count": 9,
+      "warning": "Heuristic estimate from eBay completed-listing HTML scrape."
+    }
+  }
+]

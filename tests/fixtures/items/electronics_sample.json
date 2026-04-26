@@ -1,0 +1,21 @@
+[
+  {
+    "name": "Sony Walkman WM-FX195",
+    "category": "electronics",
+    "confidence": 0.79,
+    "description": "Portable cassette player",
+    "metadata": {
+      "manufacturer": "Sony",
+      "model": "WM-FX195",
+      "color": "silver"
+    },
+    "pricing": {
+      "low": 20.0,
+      "high": 60.0,
+      "median": 38.0,
+      "source": "ebay_completed",
+      "comp_count": 7,
+      "warning": "Heuristic estimate from eBay completed-listing HTML scrape."
+    }
+  }
+]

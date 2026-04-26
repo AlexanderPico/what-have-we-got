@@ -1,0 +1,24 @@
+[
+  {
+    "name": "The Manga Guide to Relativity",
+    "category": "book",
+    "confidence": 0.92,
+    "description": "Paperback copy in good shape",
+    "metadata": {
+      "author": "Hideo Nitta",
+      "publisher": "No Starch Press",
+      "year_published": 2011,
+      "format": "paperback"
+    },
+    "identifiers": {
+      "isbn13": "9781593272722"
+    },
+    "pricing": {
+      "low": 7.0,
+      "high": 18.0,
+      "median": 11.5,
+      "source": "openlibrary_heuristic",
+      "warning": "Heuristic estimate based on OpenLibrary edition frequency."
+    }
+  }
+]

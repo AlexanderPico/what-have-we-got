@@ -1,0 +1,75 @@
+[
+  {
+    "id": "book-001",
+    "category": "book",
+    "mode": "single_image",
+    "image_path": "local-real-images/books/book-001.jpg",
+    "expected_name": "The Manga Guide to Relativity",
+    "expected_category": "book",
+    "expected_key_metadata": {
+      "author": "Hideo Nitta"
+    },
+    "acceptable_aliases": ["Manga Guide to Relativity"],
+    "source_type": "local_real",
+    "notes": "Starter benchmark record"
+  },
+  {
+    "id": "book-002",
+    "category": "dvd",
+    "mode": "single_image",
+    "image_path": "local-real-images/books-media/blade-runner-001.jpg",
+    "expected_name": "Blade Runner: The Director's Cut",
+    "expected_category": "dvd",
+    "expected_key_metadata": {
+      "director": "Ridley Scott"
+    },
+    "acceptable_aliases": ["Blade Runner Director's Cut"],
+    "source_type": "local_real",
+    "notes": "Books/media shelf item"
+  },
+  {
+    "id": "toy-001",
+    "category": "toy",
+    "mode": "single_image",
+    "image_path": "local-real-images/toys/star-wars-vader-001.jpg",
+    "expected_name": "Star Wars Black Series Darth Vader",
+    "expected_category": "toy",
+    "expected_key_metadata": {
+      "franchise": "Star Wars",
+      "character": "Darth Vader"
+    },
+    "acceptable_aliases": ["Black Series Darth Vader"],
+    "source_type": "local_real",
+    "notes": "Priority toy benchmark"
+  },
+  {
+    "id": "electronics-001",
+    "category": "electronics",
+    "mode": "text_only",
+    "text_input": "Sony Walkman WM-FX195 portable cassette player",
+    "expected_name": "Sony Walkman WM-FX195",
+    "expected_category": "electronics",
+    "expected_key_metadata": {
+      "manufacturer": "Sony",
+      "model": "WM-FX195"
+    },
+    "acceptable_aliases": ["Sony Walkman"],
+    "source_type": "synthetic_public",
+    "notes": "Starter text benchmark"
+  },
+  {
+    "id": "electronics-002",
+    "category": "electronics",
+    "mode": "single_image",
+    "image_path": "local-real-images/electronics/walkman-001.jpg",
+    "expected_name": "Sony Walkman WM-FX195",
+    "expected_category": "electronics",
+    "expected_key_metadata": {
+      "manufacturer": "Sony",
+      "model": "WM-FX195"
+    },
+    "acceptable_aliases": ["Sony Walkman"],
+    "source_type": "local_real",
+    "notes": "Priority electronics benchmark"
+  }
+]

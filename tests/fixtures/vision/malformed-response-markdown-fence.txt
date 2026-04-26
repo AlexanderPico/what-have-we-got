@@ -1,0 +1,3 @@
+```json
+[{"name":"Sony Walkman WM-FX195","category":"electronics","confidence":0.77,"metadata":{"manufacturer":"Sony","model":"WM-FX195"}}]
+```
