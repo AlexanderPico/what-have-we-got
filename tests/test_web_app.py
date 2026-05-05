@@ -170,3 +170,27 @@ def test_session_results_filters_and_sorting(tmp_path: Path):
     assert "Book Item" in response.text
     assert "Toy Item" not in response.text
     assert "Visible item details" in response.text
+
+
+def test_priced_only_filter_keeps_range_only_prices(tmp_path: Path):
+    import whgot.web_app as web_app
+
+    web_app.store = web_app.SessionStore(root=tmp_path)
+    session_id, _ = web_app.store.create_session_dir()
+
+    ranged = Item(name="Range Only Item", category=ItemCategory.BOOK, confidence=0.8)
+    ranged.pricing = PriceEstimate(low=12.0, high=18.0, source="source-b")
+    unpriced = Item(name="Unpriced Item", category=ItemCategory.BOOK, confidence=0.5)
+    items = web_app.assess_items([ranged, unpriced])
+    listings = web_app.generate_listings(items, use_llm=False)
+    web_app.store.save_bundle(
+        session_id,
+        items=items,
+        listings=listings,
+        metadata={"mode": "batch", "model": "test-model"},
+    )
+
+    response = client.get(f"/sessions/{session_id}?priced_only=true&sort_by=price")
+    assert response.status_code == 200
+    assert "Range Only Item" in response.text
+    assert "Unpriced Item" not in response.text

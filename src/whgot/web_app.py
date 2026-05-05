@@ -82,6 +82,10 @@ def _process_text(text_input: str, model: str) -> list[Item]:
     return items
 
 
+def _has_price_signal(pricing: dict) -> bool:
+    return any(pricing.get(field) is not None for field in ("median", "high", "low"))
+
+
 def _prepare_item_views(items: list[dict]) -> list[dict]:
     views: list[dict] = []
     for item in items:
@@ -129,13 +133,13 @@ def _build_context(
 ) -> dict:
     items = bundle.get("items", [])
     listings = bundle.get("listings", [])
-    priced_count = sum(1 for item in items if item.get("pricing", {}).get("median"))
+    priced_count = sum(1 for item in items if _has_price_signal(item.get("pricing", {})))
 
     item_views = _prepare_item_views(items)
     if category_filter != "all":
         item_views = [item for item in item_views if item.get("category") == category_filter]
     if priced_only:
-        item_views = [item for item in item_views if item.get("pricing", {}).get("median")]
+        item_views = [item for item in item_views if _has_price_signal(item.get("pricing", {}))]
     item_views = _sort_item_views(item_views, sort_by)
 
     visible_names = {item.get("name") for item in item_views}
