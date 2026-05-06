@@ -14,6 +14,11 @@ from whgot.schema import Item
 DEFAULT_SESSION_ROOT = Path.home() / ".whgot" / "sessions"
 
 
+def _has_price_signal(item: dict) -> bool:
+    pricing = item.get("pricing", {})
+    return any(pricing.get(field) is not None for field in ("median", "high", "low"))
+
+
 class SessionNotFoundError(FileNotFoundError):
     """Raised when a saved session bundle does not exist."""
 
@@ -54,9 +59,7 @@ class SessionStore:
                     "mode": payload.get("metadata", {}).get("mode", "unknown"),
                     "model": payload.get("metadata", {}).get("model", "unknown"),
                     "item_count": len(items),
-                    "priced_count": sum(
-                        1 for item in items if item.get("pricing", {}).get("median")
-                    ),
+                    "priced_count": sum(1 for item in items if _has_price_signal(item)),
                 }
             )
         return sessions
