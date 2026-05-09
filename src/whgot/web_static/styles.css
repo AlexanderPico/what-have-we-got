@@ -114,6 +114,16 @@ button.secondary,
   font-weight: 700;
 }
 
+.error-banner {
+  margin: 12px 0 16px;
+  border: 1px solid #f3c2c8;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #fff1f2;
+  color: #8b1e2d;
+  font-weight: 600;
+}
+
 .results-table-wrap {
   overflow-x: auto;
 }

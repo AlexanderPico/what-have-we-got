@@ -62,6 +62,7 @@ def identify_image(
     try:
         response = ollama.chat(
             model=model,
+            format="json",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {
@@ -73,11 +74,16 @@ def identify_image(
             options={"temperature": 0.1, "num_predict": 4096},
         )
     except Exception as exc:
-        if "connection" in str(exc).lower() or "refused" in str(exc).lower():
+        message = str(exc).lower()
+        if "connection" in message or "refused" in message:
             raise ConnectionError(
-                "Cannot connect to ollama. Is it running? Start with: ollama serve"
+                "Cannot connect to Ollama. Start it with: ollama serve"
             ) from exc
-        raise
+        if "not found" in message:
+            raise RuntimeError(
+                f"Vision model '{model}' not found. Pull it with: ollama pull {model}"
+            ) from exc
+        raise RuntimeError(f"Image identification failed: {exc}") from exc
 
     return parse_items_response(response["message"]["content"], source_image=str(path))
 
@@ -101,6 +107,7 @@ Return ONLY valid JSON."""
     try:
         response = ollama.chat(
             model=text_model,
+            format="json",
             messages=[
                 {"role": "system", "content": text_system},
                 {"role": "user", "content": f"Identify this item: {description}"},
@@ -108,20 +115,35 @@ Return ONLY valid JSON."""
             options={"temperature": 0.1, "num_predict": 1024},
         )
     except Exception as exc:
-        if "connection" in str(exc).lower() or "refused" in str(exc).lower():
+        message = str(exc).lower()
+        if "connection" in message or "refused" in message:
             raise ConnectionError(
-                "Cannot connect to ollama. Is it running? Start with: ollama serve"
+                "Cannot connect to Ollama. Start it with: ollama serve"
             ) from exc
-        if "not found" not in str(exc).lower():
-            raise
-        response = ollama.chat(
-            model=model,
-            messages=[
-                {"role": "system", "content": text_system},
-                {"role": "user", "content": f"Identify this item: {description}"},
-            ],
-            options={"temperature": 0.1, "num_predict": 1024},
-        )
+        if "not found" not in message:
+            raise RuntimeError(f"Text identification failed: {exc}") from exc
+        try:
+            response = ollama.chat(
+                model=model,
+                format="json",
+                messages=[
+                    {"role": "system", "content": text_system},
+                    {"role": "user", "content": f"Identify this item: {description}"},
+                ],
+                options={"temperature": 0.1, "num_predict": 1024},
+            )
+        except Exception as fallback_exc:
+            fallback_message = str(fallback_exc).lower()
+            if "connection" in fallback_message or "refused" in fallback_message:
+                raise ConnectionError(
+                    "Cannot connect to Ollama. Start it with: ollama serve"
+                ) from fallback_exc
+            if "not found" in fallback_message:
+                raise RuntimeError(
+                    "No suitable text-identification model was found. "
+                    f"Tried '{text_model}' and '{model}'. Pull one with: ollama pull {model}"
+                ) from fallback_exc
+            raise RuntimeError(f"Text identification failed: {fallback_exc}") from fallback_exc
 
     items = parse_items_response(response["message"]["content"], source_image=None)
     if items:

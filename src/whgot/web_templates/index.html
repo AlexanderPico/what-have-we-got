@@ -6,6 +6,9 @@
 <section class="card form-card">
   <h2>Analyze items</h2>
   <p>Upload photos or paste text descriptions to identify likely items, fetch rough price bands, and generate listing drafts.</p>
+  {% if error_message %}
+  <div class="error-banner">{{ error_message }}</div>
+  {% endif %}
 
   <form action="/analyze" method="post" enctype="multipart/form-data" class="stack">
     <div class="field-row">
@@ -30,8 +33,8 @@
 
     <label>
       Or paste text descriptions (one per line)
-      <textarea name="text_input" rows="8" placeholder="Sony Walkman WM-FX195&#10;Star Wars Black Series Darth Vader figure&#10;The Manga Guide to Relativity paperback"></textarea>
-    </label>
+        <textarea name="text_input" rows="8" placeholder="Sony Walkman WM-FX195&#10;Star Wars Black Series Darth Vader figure&#10;The Manga Guide to Relativity paperback">{{ text_input }}</textarea>
+</label>
 
     <div class="check-row">
       <label><input type="checkbox" name="price_lookup" checked /> Run price lookup</label>

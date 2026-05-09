@@ -107,6 +107,31 @@ def test_analyze_upload_flow(monkeypatch, tmp_path: Path):
     assert "Uploaded Item" in response.text
 
 
+def test_analyze_upload_model_missing_shows_error_and_discards_session(monkeypatch, tmp_path: Path):
+    import whgot.web_app as web_app
+
+    web_app.store = web_app.SessionStore(root=tmp_path)
+
+    def fail_identify_image(path, model, batch_mode):
+        raise RuntimeError(
+            "Vision model 'test-model' not found. Pull it with: ollama pull test-model"
+        )
+
+    monkeypatch.setattr(web_app, "identify_image", fail_identify_image)
+
+    response = client.post(
+        "/analyze",
+        data={"mode": "single", "model": "test-model"},
+        files={"files": ("sample.jpg", BytesIO(b"fake-image"), "image/jpeg")},
+    )
+
+    assert response.status_code == 200
+    assert "test-model" in response.text
+    assert "not found" in response.text
+    assert "ollama pull test-model" in response.text
+    assert not list(tmp_path.iterdir())
+
+
 def test_missing_session_returns_404(tmp_path: Path):
     import whgot.web_app as web_app
 

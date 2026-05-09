@@ -30,6 +30,25 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 store = SessionStore()
 
 
+def _render_index(
+    request: Request,
+    *,
+    error_message: Optional[str] = None,
+    model: str = DEFAULT_MODEL,
+    text_input: str = "",
+) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request,
+        "index.html",
+        {
+            "error_message": error_message,
+            "model": model,
+            "recent_sessions": store.list_sessions()[:10],
+            "text_input": text_input,
+        },
+    )
+
+
 def _serialize_items(items: list[Item]) -> list[dict]:
     return [item.model_dump(mode="json", exclude_none=True) for item in items]
 
@@ -169,14 +188,7 @@ def _build_context(
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(
-        request,
-        "index.html",
-        {
-            "model": DEFAULT_MODEL,
-            "recent_sessions": store.list_sessions()[:10],
-        },
-    )
+    return _render_index(request)
 
 
 @app.get("/sessions", response_class=HTMLResponse)
@@ -200,34 +212,43 @@ async def analyze(
 ) -> HTMLResponse:
     session_id, session_dir = store.create_session_dir()
 
-    items: list[Item] = []
-    if text_input.strip():
-        items.extend(_process_text(text_input, model=model))
-    if files:
-        items.extend(
-            _process_uploads(
-                session_dir,
-                files,
-                model=model,
-                batch_mode=(mode == "batch"),
+    try:
+        items: list[Item] = []
+        if text_input.strip():
+            items.extend(_process_text(text_input, model=model))
+        if files:
+            items.extend(
+                _process_uploads(
+                    session_dir,
+                    files,
+                    model=model,
+                    batch_mode=(mode == "batch"),
+                )
             )
+
+        if price_lookup:
+            items = enrich_prices(items)
+
+        items = assess_items(items)
+        listings = generate_listings(items, use_llm=bool(use_llm), model=model)
+
+        metadata = {
+            "mode": mode,
+            "model": model,
+            "price_lookup": bool(price_lookup),
+            "use_llm": bool(use_llm),
+        }
+        store.save_bundle(session_id, items=items, listings=listings, metadata=metadata)
+        bundle = store.load_bundle(session_id)
+        return templates.TemplateResponse(request, "results.html", _build_context(bundle))
+    except Exception as exc:
+        shutil.rmtree(session_dir, ignore_errors=True)
+        return _render_index(
+            request,
+            error_message=str(exc),
+            model=model,
+            text_input=text_input,
         )
-
-    if price_lookup:
-        items = enrich_prices(items)
-
-    items = assess_items(items)
-    listings = generate_listings(items, use_llm=bool(use_llm), model=model)
-
-    metadata = {
-        "mode": mode,
-        "model": model,
-        "price_lookup": bool(price_lookup),
-        "use_llm": bool(use_llm),
-    }
-    store.save_bundle(session_id, items=items, listings=listings, metadata=metadata)
-    bundle = store.load_bundle(session_id)
-    return templates.TemplateResponse(request, "results.html", _build_context(bundle))
 
 
 @app.get("/sessions/{session_id}", response_class=HTMLResponse)
