@@ -105,6 +105,30 @@ def _has_price_signal(pricing: dict) -> bool:
     return any(pricing.get(field) is not None for field in ("median", "high", "low"))
 
 
+def _format_currency(value: float) -> str:
+    return f"${value:.2f}"
+
+
+def _price_summary(pricing: dict) -> tuple[str, str]:
+    median = pricing.get("median")
+    low = pricing.get("low")
+    high = pricing.get("high")
+
+    if median is not None:
+        formatted = _format_currency(median)
+        return formatted, f"Median: {formatted}"
+    if low is not None and high is not None:
+        formatted = f"{_format_currency(low)}–{_format_currency(high)}"
+        return formatted, f"Estimated range: {formatted}"
+    if high is not None:
+        formatted = _format_currency(high)
+        return formatted, f"High estimate: {formatted}"
+    if low is not None:
+        formatted = _format_currency(low)
+        return formatted, f"Low estimate: {formatted}"
+    return "—", "No price estimate yet"
+
+
 def _prepare_item_views(items: list[dict]) -> list[dict]:
     views: list[dict] = []
     for item in items:
@@ -118,6 +142,7 @@ def _prepare_item_views(items: list[dict]) -> list[dict]:
         provenance_text = "; ".join(pricing.get("source_details", []))
         if not provenance_text:
             provenance_text = "No source details recorded."
+        price_display, price_detail_text = _price_summary(pricing)
         views.append(
             {
                 **item,
@@ -126,6 +151,8 @@ def _prepare_item_views(items: list[dict]) -> list[dict]:
                 "sort_triage": float(triage.get("score") or 0.0),
                 "triage_reason_text": triage_reason_text,
                 "provenance_text": provenance_text,
+                "price_display": price_display,
+                "price_detail_text": price_detail_text,
             }
         )
     return views

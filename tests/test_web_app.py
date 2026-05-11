@@ -219,3 +219,28 @@ def test_priced_only_filter_keeps_range_only_prices(tmp_path: Path):
     assert response.status_code == 200
     assert "Range Only Item" in response.text
     assert "Unpriced Item" not in response.text
+
+
+def test_range_only_prices_render_as_ranges_in_results(tmp_path: Path):
+    import whgot.web_app as web_app
+
+    web_app.store = web_app.SessionStore(root=tmp_path)
+    session_id, _ = web_app.store.create_session_dir()
+
+    ranged = Item(name="Range Only Item", category=ItemCategory.BOOK, confidence=0.8)
+    ranged.pricing = PriceEstimate(low=12.0, high=18.0, source="source-b")
+    items = web_app.assess_items([ranged])
+    listings = web_app.generate_listings(items, use_llm=False)
+    web_app.store.save_bundle(
+        session_id,
+        items=items,
+        listings=listings,
+        metadata={"mode": "batch", "model": "test-model"},
+    )
+
+    response = client.get(f"/sessions/{session_id}?priced_only=true&sort_by=price")
+
+    assert response.status_code == 200
+    assert "$12.00–$18.00" in response.text
+    assert "Estimated range: $12.00–$18.00" in response.text
+    assert "No median price yet" not in response.text

@@ -79,7 +79,7 @@
           <th>Category</th>
           <th>Triage</th>
           <th>Confidence</th>
-          <th>Median</th>
+          <th>Price</th>
           <th>Price source</th>
           <th>Why</th>
         </tr>
@@ -100,11 +100,7 @@
           </td>
           <td>{{ '%.0f'|format(item.confidence * 100) }}%</td>
           <td>
-            {% if item.pricing.median %}
-              ${{ '%.2f'|format(item.pricing.median) }}
-            {% else %}
-              —
-            {% endif %}
+            {{ item.price_display }}
           </td>
           <td>
             {{ item.pricing.source or '—' }}
@@ -136,13 +132,7 @@
     <article class="listing-card">
       <h3>{{ item.name }}</h3>
       <div class="subtext">{{ item.category }} · {{ '%.0f'|format(item.confidence * 100) }}% confidence</div>
-      <div class="price-line">
-        {% if item.pricing.median %}
-          Median: ${{ '%.2f'|format(item.pricing.median) }}
-        {% else %}
-          No median price yet
-        {% endif %}
-      </div>
+      <div class="price-line">{{ item.price_detail_text }}</div>
       <div class="detail-stack">
         <div><strong>Triage badge:</strong> {{ item.triage.badge }}</div>
         <div><strong>Triage score:</strong> {{ '%.1f'|format(item.triage.score) }}</div>
